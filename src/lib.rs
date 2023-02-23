@@ -14,20 +14,32 @@
 #![feature(map_try_insert)]
 #![allow(unused_assignments)]
 
-extern crate test;
-
+//!
+//! For single-threaded code:
+//! ```
+//! # use safe_once::unsync::OnceCell;
+//! # use safe_once_map::unsync::OnceCellMap;
+//! let map = OnceCellMap::<String, i32>::new();
+//! let cell: &OnceCell<i32> = &map["a"];
+//! assert_eq!(4, *map["a"].get_or_init(|| 4));
+//! assert_eq!(4, *map["a"].get_or_init(|| 8));
+//! ```
+//!
+//! For multi-threaded code:
+//! ```
+//! # use safe_once::sync::OnceLock;
+//! # use safe_once_map::sync::OnceLockMap;
+//! let map = OnceLockMap::<String, i32>::new();
+//! let cell: &OnceLock<i32> = &map["a"];
+//! assert_eq!(4, *map["a"].get_or_init(|| 4));
+//! assert_eq!(4, *map["a"].get_or_init(|| 8));
+//! ```
+//!
 #[cfg(feature = "unsync")]
-mod raw_mutex_cell;
+pub mod raw_mutex_cell;
 #[cfg(feature = "unsync")]
-mod unsync;
+pub mod unsync;
 #[cfg(feature = "sync")]
-mod sync;
-mod unbounded;
-mod unstable_map;
-mod stable_map;
-
-#[cfg(feature = "unsync")]
-pub use unsync::*;
-
-#[cfg(feature = "sync")]
-pub use sync::*;
+pub mod sync;
+pub mod raw_map;
+pub mod stable_map;
