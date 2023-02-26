@@ -12,34 +12,84 @@
 #![feature(sort_floats)]
 #![feature(build_hasher_simple_hash_one)]
 #![feature(map_try_insert)]
+#![feature(type_name_of_val)]
+#![feature(unboxed_closures)]
 #![allow(unused_assignments)]
+#![feature(fn_traits)]
+#![feature(tuple_trait)]
 
+//! Utilities for caching and memoization.
 //!
-//! For single-threaded code:
+//! ## Closure
+//! A closure can be memoized with [`LazyCellFn`](unsync::LazyCellFn)
+//! (or [`LazyLockFn`](sync::LazyLockFn) to implement [`Sync`](std::marker::Sync)):
 //! ```
-//! # use safe_once::unsync::OnceCell;
+//! # use std::cell::Cell;
+//! # use rand::{Rng, thread_rng};
+//! # use safe_once_map::unsync::LazyCellFn;
+//! let memoized = LazyCellFn::new(|x:u8| thread_rng().gen::<u32>());
+//! assert_eq!(memoized(1), memoized(1));
+//! assert_eq!(memoized(2), memoized(2));
+//! assert_ne!(memoized(1), memoized(2));
+//! ```
+//!
+//! ## Method
+//! A method can be memoized with [`OnceCellMap`](unsync::OnceCellMap)
+//! (or [`OnceLockMap`](sync::OnceLockMap) to implement [`Sync`](std::marker::Sync)):
+//! ```
+//! # use std::cell::Cell;
+//! # use rand::{Rng, thread_rng};
+//! # use safe_once::unsync::LazyCell;
 //! # use safe_once_map::unsync::OnceCellMap;
-//! let map = OnceCellMap::<String, i32>::new();
-//! let cell: &OnceCell<i32> = &map["a"];
-//! assert_eq!(4, *map["a"].get_or_init(|| 4));
-//! assert_eq!(4, *map["a"].get_or_init(|| 8));
+//! struct Fibonacci { memo: OnceCellMap<usize,usize> };
+//! impl Fibonacci {
+//!     fn fib(&self, x: usize) -> usize{
+//!         *self.memo[&x].get_or_init(||{
+//!             if x == 0 || x == 1 {
+//!                 1
+//!             }else{
+//!                 self.fib(x - 1) + self.fib(x - 2)
+//!             }
+//!         })
+//!     }
+//! }
+//! let fib = Fibonacci { memo: OnceCellMap::new() };
+//! assert_eq!(fib.fib(0), 1);
+//! assert_eq!(fib.fib(1), 1);
+//! assert_eq!(fib.fib(2), 2);
 //! ```
 //!
-//! For multi-threaded code:
+//! ## Top-level `fn`
+//! A top-level `fn` can be memoized with [`OnceLockMap`](sync::OnceLockMap):
 //! ```
-//! # use safe_once::sync::OnceLock;
+//! # use rand::{Rng, thread_rng};
+//! # use safe_once::sync::LazyLock;
 //! # use safe_once_map::sync::OnceLockMap;
-//! let map = OnceLockMap::<String, i32>::new();
-//! let cell: &OnceLock<i32> = &map["a"];
-//! assert_eq!(4, *map["a"].get_or_init(|| 4));
-//! assert_eq!(4, *map["a"].get_or_init(|| 8));
+//! fn memoized(x: u8) -> u32{
+//!     static MAP : LazyLock<OnceLockMap<u8, u32>> = LazyLock::new(Default::default);
+//!     *MAP[&x].get_or_init(|| {
+//!         thread_rng().gen()
+//!     })
+//! }
+//! assert_eq!(memoized(0), memoized(0));
+//! assert_eq!(memoized(1), memoized(1));
+//! assert_ne!(memoized(0), memoized(1));
 //! ```
-//!
+
 #[cfg(feature = "unsync")]
-pub mod raw_mutex_cell;
+pub mod raw_cell_mutex;
+#[cfg(feature = "unsync")]
+pub mod simple_stable_map;
 #[cfg(feature = "unsync")]
 pub mod unsync;
+
+#[cfg(feature = "sync")]
+pub mod sharded_stable_map;
 #[cfg(feature = "sync")]
 pub mod sync;
-pub mod raw_map;
+
+mod cow_entry;
+mod index_arena;
 pub mod stable_map;
+pub mod once_map;
+pub mod lazy_map;
