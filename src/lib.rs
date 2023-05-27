@@ -8,8 +8,6 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 #![feature(type_alias_impl_trait)]
-#![feature(box_syntax)]
-#![feature(sort_floats)]
 #![feature(build_hasher_simple_hash_one)]
 #![feature(map_try_insert)]
 #![feature(type_name_of_val)]
@@ -39,7 +37,6 @@
 //! ```
 //! # use std::cell::Cell;
 //! # use rand::{Rng, thread_rng};
-//! # use safe_once::unsync::LazyCell;
 //! # use safe_once_map::unsync::OnceCellMap;
 //! struct Fibonacci { memo: OnceCellMap<usize,usize> };
 //! impl Fibonacci {
@@ -76,20 +73,15 @@
 //! assert_ne!(memoized(0), memoized(1));
 //! ```
 
-#[cfg(feature = "unsync")]
 pub mod raw_cell_mutex;
-#[cfg(feature = "unsync")]
 pub mod simple_stable_map;
-#[cfg(feature = "unsync")]
 pub mod unsync;
 
-#[cfg(feature = "sync")]
 pub mod sharded_stable_map;
-#[cfg(feature = "sync")]
 pub mod sync;
 
 mod cow_entry;
 mod index_arena;
 pub mod stable_map;
-pub mod once_map;
+// pub mod once_map;
 pub mod lazy_map;

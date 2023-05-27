@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 lock_api = "0.4.9"
 safe-once = { path = "../safe-once", features = [] }
-parking_lot = { version = "0.12.1", optional = true }
+parking_lot = { version = "0.12.1" }
 
 [dev-dependencies]
 dashmap = "5.4.0"
@@ -18,9 +18,3 @@ concurrent-map = "5.0.6"
 rand = { version = "0.8.5", features = ["small_rng"] }
 statistical = "1.0.0"
 linreg = "0.2.0"
-
-[features]
-default = ["sync", "unsync"]
-unsync = ["safe-once/unsync"]
-sync = ["safe-once/sync", "parking_lot"]
-

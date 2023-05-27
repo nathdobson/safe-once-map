@@ -6,10 +6,9 @@ use std::default::default;
 use std::hash::{BuildHasher, Hash};
 use lock_api::{Mutex, RawMutex};
 use safe_once::raw::RawOnce;
-use safe_once::unsync::RawOnceCell;
 use crate::cow_entry::CowEntry;
 use crate::index_arena::IndexArena;
-use crate::stable_map::StableMap;
+use crate::stable_map::StableMapImpl;
 
 pub struct SimpleStableMap<K, V, S, RO: RawOnce, RM> {
     arena: IndexArena<RO, V>,
@@ -32,7 +31,7 @@ impl<K, V, S, RO, RM> Default for SimpleStableMap<K, V, S, RO, RM>
     }
 }
 
-impl<K, V, S, RO, RM> StableMap for SimpleStableMap<K, V, S, RO, RM>
+impl<K, V, S, RO, RM> StableMapImpl for SimpleStableMap<K, V, S, RO, RM>
     where
         K: Eq + Hash,
         V: Default,

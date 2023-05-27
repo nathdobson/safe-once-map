@@ -35,7 +35,6 @@ impl<K, V, RO, M> OnceMap<K, V, M> where M: StableMap<Key=K, Value=Once<RO, V>>,
 impl<'q, K, V, RO, M, Q> Index<&'q Q> for OnceMap<K, V, M>
     where Q: ?Sized + Hash + Eq + ToOwned<Owned=K>,
           K: Hash + Eq + Borrow<Q>,
-          V: Default,
           M: StableMap<Key=K, Value=Once<RO, V>>,
           RO: RawOnce {
     type Output = Once<RO, V>;

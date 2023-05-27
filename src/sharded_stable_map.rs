@@ -10,7 +10,7 @@ use safe_once::sync::RawOnceLock;
 use crate::index_arena::IndexArena;
 use parking_lot::RawMutex as ParkingLotRawMutex;
 use crate::cow_entry::CowEntry;
-use crate::stable_map::StableMap;
+use crate::stable_map::StableMapImpl;
 
 pub struct ShardedStableMap<K, V, S, RO: RawOnce, RM> {
     arena: IndexArena<RO, V>,
@@ -35,7 +35,7 @@ impl<K, V, S, RO: RawOnce, RM: RawMutex> ShardedStableMap<K, V, S, RO, RM> where
     }
 }
 
-impl<K, V, S, RO: RawOnce, RM: RawMutex> StableMap for ShardedStableMap<K, V, S, RO, RM> where S: BuildHasher, K: Hash + Eq, V: Default {
+impl<K, V, S, RO: RawOnce, RM: RawMutex> StableMapImpl for ShardedStableMap<K, V, S, RO, RM> where S: BuildHasher, K: Hash + Eq, V: Default {
     type Key = K;
     type Value = V;
     fn get_or_insert<Q>(&self, key: Cow<Q>) -> &Self::Value where Q: ?Sized + Hash + Eq + ToOwned<Owned=Self::Key>, Self::Key: Borrow<Q> {

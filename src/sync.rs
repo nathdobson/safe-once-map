@@ -13,20 +13,15 @@ use safe_once::sync::{OnceLock, RawOnceLock};
 use crate::cow_entry::{CowEntry, CowEntryMut};
 use crate::index_arena::IndexArena;
 use crate::lazy_map::LazyFn;
-use crate::once_map::OnceMap;
 use crate::sharded_stable_map::ShardedStableMap;
 use crate::simple_stable_map::SimpleStableMap;
-use crate::stable_map::StableMap;
+use crate::stable_map::{StableMap, StableMapImpl};
 
-pub type RawOnceLockMap<K: Eq + Hash, V> = impl Default + StableMap<Key=K, Value=OnceLock<V>>;
+pub type RawOnceLockMap<K: Eq + Hash, V> = ShardedStableMap<K, V, RandomState, RawOnceLock, RawMutex>;
 
-fn force_impl<K: Eq + Hash, V>(map: ShardedStableMap<K, OnceLock<V>, RandomState, RawOnceLock, RawMutex>) -> RawOnceLockMap<K, V> {
-    map
-}
+pub type OnceLockMap<K, V> = StableMap<RawOnceLockMap<K, V>>;
 
-pub type OnceLockMap<K, V> = OnceMap<K, V, RawOnceLockMap<K, V>>;
-
-pub type LazyLockFn<K, V, F = fn(K) -> V> = LazyFn<K, V, F, RawOnceLockMap<K, V>>;
+pub type LazyLockFn<K, V, F = fn(K) -> V> = LazyFn<K, V, F, RawOnceLockMap<K, OnceLock<V>>>;
 
 #[test]
 fn test_lazy() {
@@ -37,7 +32,7 @@ fn test_lazy() {
 
 #[test]
 fn test() {
-    let map = OnceLockMap::<String, String>::new();
+    let map = OnceLockMap::<String, OnceLock<String>>::default();
     assert_eq!("b", *map["a"].get_or_init(|| "b".to_string()));
     assert_eq!("b", *map["a"].get_or_init(|| "c".to_string()));
 }
