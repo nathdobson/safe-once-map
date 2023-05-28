@@ -8,31 +8,29 @@ use std::marker::PhantomData;
 use std::mem;
 use std::ops::Index;
 use safe_once::cell::{OnceCell, RawOnceCell};
+use safe_once_async::cell::AsyncOnceCell;
 use crate::cow_entry::{CowEntry, CowEntryMut};
 use crate::index_arena::IndexArena;
-use crate::lazy_map::LazyFn;
+use crate::lazy_map::LazyMap;
 use crate::raw_cell_mutex::RawCellMutex;
-use crate::stable_map::{StableMap, StableMapImpl};
-use crate::simple_stable_map::SimpleStableMap;
+use crate::stable_map::StableMap;
 
-pub type RawOnceCellMap<K: Eq + Hash, V> = SimpleStableMap<K, V, RandomState, RawOnceCell, RawCellMutex>;
-
-pub type OnceCellMap<K, V> = StableMap<RawOnceCellMap<K, V>>;
-
-pub type LazyCellFn<K, V, F> = LazyFn<K, V, F, RawOnceCellMap<K, OnceCell<V>>>;
+pub type OnceCellMap<K, V> = StableMap<K, OnceCell<V>, RandomState, RawOnceCell, RawCellMutex>;
+pub type AsyncOnceCellMap<K, V> = StableMap<K, AsyncOnceCell<V>, RandomState, RawOnceCell, RawCellMutex>;
+pub type LazyCellMap<K, V, F> = LazyMap<K, V, F, RandomState, RawOnceCell, RawCellMutex>;
 
 #[test]
 fn test_lazy() {
     // use crate::lazy_map::LazyFn;
 
-    let lazy: LazyFn<(usize, ), usize, _, _> = LazyCellFn::new(|x: usize| x + x);
+    let lazy: LazyMap<(usize, ), usize, _, _, _, _> = LazyCellMap::new(|x: usize| x + x);
     assert_eq!(4, *lazy.get((2, )));
     assert_eq!(4, lazy(2));
 }
 
 #[test]
 fn test() {
-    let map = OnceCellMap::<String, OnceCell<String>>::default();
+    let map = OnceCellMap::<String, String>::default();
     assert_eq!("b", *map["a"].get_or_init(|| "b".to_string()));
     assert_eq!("b", *map["a"].get_or_init(|| "c".to_string()));
 }

@@ -24,8 +24,8 @@
 //! ```
 //! # use std::cell::Cell;
 //! # use rand::{Rng, thread_rng};
-//! # use safe_once_map::unsync::LazyCellFn;
-//! let memoized = LazyCellFn::new(|x:u8| thread_rng().gen::<u32>());
+//! # use safe_once_map::unsync::LazyCellMap;
+//! let memoized = LazyCellMap::new(|x:u8| thread_rng().gen::<u32>());
 //! assert_eq!(memoized(1), memoized(1));
 //! assert_eq!(memoized(2), memoized(2));
 //! assert_ne!(memoized(1), memoized(2));
@@ -37,6 +37,7 @@
 //! ```
 //! # use std::cell::Cell;
 //! # use rand::{Rng, thread_rng};
+//! # use safe_once::cell::OnceCell;
 //! # use safe_once_map::unsync::OnceCellMap;
 //! struct Fibonacci { memo: OnceCellMap<usize,usize> };
 //! impl Fibonacci {
@@ -60,7 +61,7 @@
 //! A top-level `fn` can be memoized with [`OnceLockMap`](sync::OnceLockMap):
 //! ```
 //! # use rand::{Rng, thread_rng};
-//! # use safe_once::sync::LazyLock;
+//! # use safe_once::sync::{LazyLock, OnceLock};
 //! # use safe_once_map::sync::OnceLockMap;
 //! fn memoized(x: u8) -> u32{
 //!     static MAP : LazyLock<OnceLockMap<u8, u32>> = LazyLock::new(Default::default);
@@ -74,10 +75,8 @@
 //! ```
 
 pub mod raw_cell_mutex;
-pub mod simple_stable_map;
 pub mod unsync;
 
-pub mod sharded_stable_map;
 pub mod sync;
 
 mod cow_entry;
@@ -85,3 +84,5 @@ mod index_arena;
 pub mod stable_map;
 // pub mod once_map;
 pub mod lazy_map;
+pub mod async_lazy_map;
+pub mod async_once_map;
