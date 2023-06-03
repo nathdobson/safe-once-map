@@ -5,18 +5,17 @@ use std::marker::{PhantomData, Tuple};
 use lock_api::RawMutex;
 use safe_once::cell::OnceCell;
 use safe_once::once::Once;
-use safe_once::raw::RawOnce;
+use safe_once::raw::RawFused;
 use crate::stable_map::StableMap;
 
-pub struct LazyMap<K, V, F, S, RO: RawOnce, RM> {
+pub struct LazyMap<K, V, F, S, RO: RawFused, RM> {
     callback: F,
     map: StableMap<K, OnceCell<V>, S, RO, RM>,
     phantom: PhantomData<(K, V)>,
 }
 
 //
-impl<K, V, F, S, RO: RawOnce, RM> LazyMap<K, V, F, S, RO, RM> where
-    RO: RawOnce,
+impl<K, V, F, S, RF: RawFused, RM> LazyMap<K, V, F, S, RF, RM> where
     K: Tuple + Eq + Hash + Clone,
     F: Fn<K, Output=V>,
     S: Default + BuildHasher,
@@ -30,9 +29,9 @@ impl<K, V, F, S, RO: RawOnce, RM> LazyMap<K, V, F, S, RO, RM> where
     }
 }
 
-impl<K, V, F, S, RO: RawOnce, RM> FnOnce<K> for LazyMap<K, V, F, S, RO, RM> where
+impl<K, V, F, S, RF, RM> FnOnce<K> for LazyMap<K, V, F, S, RF, RM> where
     K: Tuple + Eq + Hash + Clone,
-    RO: RawOnce,
+    RF: RawFused,
     V: Clone,
     F: Fn<K, Output=V>,
     S: Default + BuildHasher,
@@ -44,9 +43,9 @@ impl<K, V, F, S, RO: RawOnce, RM> FnOnce<K> for LazyMap<K, V, F, S, RO, RM> wher
     }
 }
 
-impl<K, V, F, S, RO: RawOnce, RM> FnMut<K> for LazyMap<K, V, F, S, RO, RM> where
+impl<K, V, F, S, RF, RM> FnMut<K> for LazyMap<K, V, F, S, RF, RM> where
     K: Tuple + Eq + Hash + Clone,
-    RO: RawOnce,
+    RF: RawFused,
     V: Clone,
     F: Fn<K, Output=V>,
     S: Default + BuildHasher,
@@ -57,9 +56,9 @@ impl<K, V, F, S, RO: RawOnce, RM> FnMut<K> for LazyMap<K, V, F, S, RO, RM> where
     }
 }
 
-impl<K, V, F, S, RO: RawOnce, RM> Fn<K> for LazyMap<K, V, F, S, RO, RM> where
+impl<K, V, F, S, RF, RM> Fn<K> for LazyMap<K, V, F, S, RF, RM> where
     K: Tuple + Eq + Hash + Clone,
-    RO: RawOnce,
+    RF: RawFused,
     V: Clone,
     F: Fn<K, Output=V>,
     S: Default + BuildHasher,

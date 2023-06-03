@@ -1,9 +1,9 @@
 use std::default::default;
 use std::ops::Index;
 use safe_once::once::Once;
-use safe_once::raw::RawOnce;
+use safe_once::raw::RawFused;
 
-pub struct IndexArena<R: RawOnce, T> {
+pub struct IndexArena<R: RawFused, T> {
     arena: Vec<Once<R, Vec<T>>>,
 }
 
@@ -13,7 +13,7 @@ fn arena_index(index: usize) -> (usize, usize) {
     (major, minor)
 }
 
-impl<R: RawOnce, T: Default> IndexArena<R, T> {
+impl<R: RawFused, T: Default> IndexArena<R, T> {
     pub fn new() -> Self {
         IndexArena {
             arena: (0..usize::BITS).map(|_| default()).collect(),

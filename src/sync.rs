@@ -8,17 +8,16 @@ use std::marker::Tuple;
 use std::ops::Index;
 use lock_api::Mutex;
 use parking_lot::RawMutex;
-use safe_once::raw::RawOnce;
-use safe_once::sync::{OnceLock, RawOnceLock};
+use safe_once::sync::{OnceLock, RawFusedLock};
 use safe_once_async::sync::AsyncOnceLock;
 use crate::cow_entry::{CowEntry, CowEntryMut};
 use crate::index_arena::IndexArena;
 use crate::lazy_map::LazyMap;
 use crate::stable_map::StableMap;
 
-pub type OnceLockMap<K, V> = StableMap<K, OnceLock<V>, RandomState, RawOnceLock, RawMutex>;
-pub type AsyncOnceLockMap<K, V> = StableMap<K, AsyncOnceLock<V>, RandomState, RawOnceLock, RawMutex>;
-pub type LazyLockFn<K, V, F> = LazyMap<K, V, F, RandomState, RawOnceLock, RawMutex>;
+pub type OnceLockMap<K, V> = StableMap<K, OnceLock<V>, RandomState, RawFusedLock, RawMutex>;
+pub type AsyncOnceLockMap<K, V> = StableMap<K, AsyncOnceLock<V>, RandomState, RawFusedLock, RawMutex>;
+pub type LazyLockFn<K, V, F> = LazyMap<K, V, F, RandomState, RawFusedLock, RawMutex>;
 
 #[test]
 fn test_lazy() {
