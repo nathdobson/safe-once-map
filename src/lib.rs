@@ -15,16 +15,17 @@
 #![allow(unused_assignments)]
 #![feature(fn_traits)]
 #![feature(tuple_trait)]
+#![allow(unused_mut)]
 
 //! Utilities for caching and memoization.
 //!
 //! ## Closure
-//! A closure can be memoized with [`LazyCellFn`](unsync::LazyCellFn)
+//! A closure can be memoized with [`LazyMap`](unsync::LazyMap)
 //! (or [`LazyLockFn`](sync::LazyLockFn) to implement [`Sync`](std::marker::Sync)):
 //! ```
 //! # use std::cell::Cell;
 //! # use rand::{Rng, thread_rng};
-//! # use safe_once_map::unsync::LazyCellMap;
+//! # use safe_once_map::cell::LazyCellMap;
 //! let memoized = LazyCellMap::new(|x:u8| thread_rng().gen::<u32>());
 //! assert_eq!(memoized(1), memoized(1));
 //! assert_eq!(memoized(2), memoized(2));
@@ -38,7 +39,7 @@
 //! # use std::cell::Cell;
 //! # use rand::{Rng, thread_rng};
 //! # use safe_once::cell::OnceCell;
-//! # use safe_once_map::unsync::OnceCellMap;
+//! # use safe_once_map::cell::OnceCellMap;
 //! struct Fibonacci { memo: OnceCellMap<usize,usize> };
 //! impl Fibonacci {
 //!     fn fib(&self, x: usize) -> usize{
@@ -74,15 +75,10 @@
 //! assert_ne!(memoized(0), memoized(1));
 //! ```
 
-pub mod raw_cell_mutex;
-pub mod unsync;
+pub mod cell;
 
 pub mod sync;
 
-mod cow_entry;
-mod index_arena;
-pub mod stable_map;
 // pub mod once_map;
-pub mod lazy_map;
-pub mod async_lazy_map;
-pub mod async_once_map;
+pub mod util;
+pub mod api;

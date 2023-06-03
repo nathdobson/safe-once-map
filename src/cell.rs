@@ -8,16 +8,16 @@ use std::marker::PhantomData;
 use std::mem;
 use std::ops::Index;
 use safe_once::cell::{OnceCell, RawFusedCell};
-use safe_once_async::cell::AsyncOnceCell;
-use crate::cow_entry::{CowEntry, CowEntryMut};
-use crate::index_arena::IndexArena;
-use crate::lazy_map::LazyMap;
-use crate::raw_cell_mutex::RawCellMutex;
-use crate::stable_map::StableMap;
+use safe_once_async::cell::{AsyncOnceCell, AsyncRawFusedCell};
+use crate::api::async_lazy_map::AsyncLazyMap;
+use crate::api::lazy_map::LazyMap;
+use crate::util::{RawCellMutex, StableMap};
 
 pub type OnceCellMap<K, V> = StableMap<K, OnceCell<V>, RandomState, RawFusedCell, RawCellMutex>;
 pub type AsyncOnceCellMap<K, V> = StableMap<K, AsyncOnceCell<V>, RandomState, RawFusedCell, RawCellMutex>;
 pub type LazyCellMap<K, V, F> = LazyMap<K, V, F, RandomState, RawFusedCell, RawCellMutex>;
+pub type AsyncLazyCellMap<K, V, S = RandomState> = AsyncLazyMap<K, V, S, RawFusedCell, AsyncRawFusedCell, RawCellMutex>;
+
 
 #[test]
 fn test_lazy() {

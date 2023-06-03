@@ -9,15 +9,15 @@ use std::ops::Index;
 use lock_api::Mutex;
 use parking_lot::RawMutex;
 use safe_once::sync::{OnceLock, RawFusedLock};
-use safe_once_async::sync::AsyncOnceLock;
-use crate::cow_entry::{CowEntry, CowEntryMut};
-use crate::index_arena::IndexArena;
-use crate::lazy_map::LazyMap;
-use crate::stable_map::StableMap;
+use safe_once_async::sync::{AsyncOnceLock, AsyncRawFusedLock};
+use crate::api::async_lazy_map::AsyncLazyMap;
+use crate::api::lazy_map::LazyMap;
+use crate::util::StableMap;
 
 pub type OnceLockMap<K, V> = StableMap<K, OnceLock<V>, RandomState, RawFusedLock, RawMutex>;
 pub type AsyncOnceLockMap<K, V> = StableMap<K, AsyncOnceLock<V>, RandomState, RawFusedLock, RawMutex>;
 pub type LazyLockFn<K, V, F> = LazyMap<K, V, F, RandomState, RawFusedLock, RawMutex>;
+pub type AsyncLazyLockMap<K, V, S = RandomState> =  AsyncLazyMap<K, V, S, RawFusedLock, AsyncRawFusedLock, RawMutex>;
 
 #[test]
 fn test_lazy() {

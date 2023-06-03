@@ -3,10 +3,9 @@ use std::default::default;
 use std::hash::{BuildHasher, Hash};
 use std::marker::{PhantomData, Tuple};
 use lock_api::RawMutex;
+use safe_once::api::raw::RawFused;
 use safe_once::cell::OnceCell;
-use safe_once::once::Once;
-use safe_once::raw::RawFused;
-use crate::stable_map::StableMap;
+use crate::util::StableMap;
 
 pub struct LazyMap<K, V, F, S, RO: RawFused, RM> {
     callback: F,

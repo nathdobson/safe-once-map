@@ -1,7 +1,7 @@
 use std::default::default;
 use std::ops::Index;
-use safe_once::once::Once;
-use safe_once::raw::RawFused;
+use safe_once::api::once::Once;
+use safe_once::api::raw::RawFused;
 
 pub struct IndexArena<R: RawFused, T> {
     arena: Vec<Once<R, Vec<T>>>,

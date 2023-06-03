@@ -4,9 +4,9 @@ use std::default::default;
 use std::hash::{BuildHasher, Hash};
 use std::ops::Index;
 use lock_api::{Mutex, RawMutex};
-use safe_once::raw::RawFused;
-use crate::cow_entry::CowEntry;
-use crate::index_arena::IndexArena;
+use safe_once::api::raw::RawFused;
+use crate::util::cow_entry::CowEntry;
+use crate::util::index_arena::IndexArena;
 
 pub struct StableMap<K, V, S, RF: RawFused, RM> {
     arena: IndexArena<RF, V>,
