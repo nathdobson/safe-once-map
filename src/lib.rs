@@ -1,5 +1,4 @@
 #![feature(hash_raw_entry)]
-#![feature(default_free_fn)]
 #![feature(trait_alias)]
 #![feature(test)]
 #![deny(unused_must_use)]
@@ -8,9 +7,7 @@
 #![allow(unused_variables)]
 #![allow(unused_mut)]
 #![feature(type_alias_impl_trait)]
-#![feature(build_hasher_simple_hash_one)]
 #![feature(map_try_insert)]
-#![feature(type_name_of_val)]
 #![feature(unboxed_closures)]
 #![allow(unused_assignments)]
 #![feature(fn_traits)]
@@ -80,5 +77,5 @@ pub mod cell;
 pub mod sync;
 
 // pub mod once_map;
-pub mod util;
 pub mod api;
+pub mod util;

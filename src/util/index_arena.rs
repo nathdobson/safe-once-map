@@ -1,7 +1,7 @@
-use std::default::default;
-use std::ops::Index;
 use safe_once::api::once::Once;
 use safe_once::api::raw::RawFused;
+use safe_once::cell::{OnceCell, RawFusedCell};
+use std::ops::Index;
 
 pub struct IndexArena<R: RawFused, T> {
     arena: Vec<Once<R, Vec<T>>>,
@@ -16,12 +16,17 @@ fn arena_index(index: usize) -> (usize, usize) {
 impl<R: RawFused, T: Default> IndexArena<R, T> {
     pub fn new() -> Self {
         IndexArena {
-            arena: (0..usize::BITS).map(|_| default()).collect(),
+            arena: (0..usize::BITS).map(|_| Default::default()).collect(),
         }
     }
-    pub fn get(&self, index: usize) -> &T {
+    pub fn get_or_init(&self, index: usize) -> &T {
         let (major, minor) = arena_index(index);
-        &self.arena[major].get_or_init(|| (0..1 << major).map(|_| default()).collect())[minor]
+        &self.arena[major].get_or_init(|| (0..1 << major).map(|_| Default::default()).collect())
+            [minor]
+    }
+    pub fn try_get(&self, index: usize) -> Option<&T> {
+        let (major, minor) = arena_index(index);
+        Some(&self.arena[major].get()?[minor])
     }
 }
 
@@ -35,4 +40,10 @@ fn test_arena_index() {
     assert_eq!((2, 2), arena_index(5));
     assert_eq!((2, 3), arena_index(6));
     assert_eq!((3, 0), arena_index(7));
+}
+
+#[test]
+fn test_arena() {
+    let arena = IndexArena::<RawFusedCell, OnceCell<String>>::new();
+    arena.get_or_init(123).set("Asd".to_string()).unwrap();
 }

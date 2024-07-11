@@ -1,7 +1,5 @@
-use std::collections::hash_map::RandomState;
-use std::future::Future;
-use std::hash::{BuildHasher, Hash};
-use std::marker::Tuple;
+use crate::sync::AsyncLazyLockMap;
+use crate::util::StableMap;
 use parking_lot::RawMutex;
 use safe_once::api::raw::RawFused;
 use safe_once::cell::RawFusedCell;
@@ -9,40 +7,61 @@ use safe_once::sync::RawFusedLock;
 use safe_once_async::async_lazy::AsyncLazy;
 use safe_once_async::async_once::AsyncOnce;
 use safe_once_async::cell::AsyncRawFusedCell;
-use safe_once_async::detached::{Detached, detached};
+use safe_once_async::detached::DetachedFuture;
 use safe_once_async::raw::AsyncRawFused;
 use safe_once_async::sync::AsyncRawFusedLock;
-use crate::sync::AsyncLazyLockMap;
-use crate::util::StableMap;
+use std::collections::hash_map::RandomState;
+use std::future::Future;
+use std::hash::{BuildHasher, Hash};
+use std::marker::Tuple;
+use std::pin::Pin;
+use tokio::task::JoinHandle;
 
-pub struct AsyncLazyMap<K, V, S, RF: RawFused, ARF: AsyncRawFused, RM> {
-    callback: Box<dyn Fn(K) -> Detached<V>>,
-    map: StableMap<K, AsyncOnce<ARF, V>, S, RF, RM>,
+pub struct AsyncLazyMap<K, F, Fu: DetachedFuture, S, RF: RawFused, ARF: AsyncRawFused, RM> {
+    callback: F,
+    map: StableMap<K, AsyncOnce<ARF, Fu>, S, RF, RM>,
 }
 
 impl<
-    K: Eq + Hash + Clone,
-    V: 'static + Send,
-    S: Default + BuildHasher,
-    RO: RawFused,
-    ARF: AsyncRawFused,
-    RM: lock_api::RawMutex
-> AsyncLazyMap<K, V, S, RO, ARF, RM> {
-    pub fn new<F, Fu>(callback: F) -> Self where F: 'static + Fn(K) -> Fu, Fu: 'static + Send + Future<Output=V> {
+        K: Eq + Hash + Clone,
+        F,
+        Fu,
+        S: Default + BuildHasher,
+        RO: RawFused,
+        ARF: AsyncRawFused,
+        RM: lock_api::RawMutex,
+    > AsyncLazyMap<K, F, Fu, S, RO, ARF, RM>
+where
+    F: 'static + Fn(K) -> Fu,
+    Fu: 'static + Unpin + DetachedFuture<Output: 'static + Send>,
+{
+    pub fn new(callback: F) -> Self {
         AsyncLazyMap {
-            callback: Box::new(move |k| {
-                detached(callback(k))
-            }),
+            callback,
             map: StableMap::new(),
         }
     }
-    pub async fn get(&self, key: K) -> &V {
-        self.map[&key].get_or_init_detached(|| (self.callback)(key)).await
+    pub async fn get(&self, key: K) -> &Fu::Output {
+        self.map[&key]
+            .get_or_init_detached(|| (self.callback)(key))
+            .await
     }
 }
 
-#[tokio::test]
-async fn test_async_lazy_map() {
-    let map = AsyncLazyLockMap::<String, String>::new(|x| async { x });
-    assert_eq!(map.get("a".to_string()).await, "a");
+#[cfg(test)]
+mod test {
+    use crate::sync::AsyncLazyLockMap;
+    use safe_once_async::detached::{spawn_transparent, DetachedFuture, JoinTransparent};
+    use std::pin::Pin;
+
+    #[tokio::test]
+    async fn test_async_lazy_map() {
+        use futures::FutureExt;
+        struct Foo;
+        let map =
+            AsyncLazyLockMap::<String, JoinTransparent<String>>::new(Box::new(|x: String| {
+                spawn_transparent(async { x })
+            }));
+        assert_eq!(map.get("a".to_string()).await, "a");
+    }
 }
