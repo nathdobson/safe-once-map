@@ -15,7 +15,6 @@ use std::future::Future;
 use std::hash::{BuildHasher, Hash};
 use std::marker::Tuple;
 use std::pin::Pin;
-use tokio::task::JoinHandle;
 
 pub struct AsyncLazyMap<K, F, Fu: DetachedFuture, S, RF: RawFused, ARF: AsyncRawFused, RM> {
     callback: F,
