@@ -26,7 +26,7 @@ impl<R: RawFused, T: Default> IndexArena<R, T> {
     }
     pub fn try_get(&self, index: usize) -> Option<&T> {
         let (major, minor) = arena_index(index);
-        Some(&self.arena[major].get()?[minor])
+        Some(&self.arena[major].try_get()?[minor])
     }
 }
 
@@ -45,5 +45,5 @@ fn test_arena_index() {
 #[test]
 fn test_arena() {
     let arena = IndexArena::<RawFusedCell, OnceCell<String>>::new();
-    arena.get_or_init(123).set("Asd".to_string()).unwrap();
+    arena.get_or_init(123).get_or_init(|| "Asd".to_string());
 }
