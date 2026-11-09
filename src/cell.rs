@@ -5,7 +5,7 @@ use safe_once::cell::{OnceCell, RawFusedCell};
 use safe_once_async::cell::{AsyncOnceCell, AsyncRawFusedCell};
 use std::borrow::{Borrow, Cow};
 use std::cell::{Ref, RefCell};
-use std::collections::hash_map::{RandomState, RawEntryMut, RawVacantEntryMut};
+use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::future::Future;
 use std::hash::{BuildHasher, Hash};

@@ -1,4 +1,3 @@
-#![feature(hash_raw_entry)]
 #![feature(trait_alias)]
 #![feature(test)]
 #![deny(unused_must_use)]

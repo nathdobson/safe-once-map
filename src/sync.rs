@@ -7,7 +7,7 @@ use safe_once::sync::{OnceLock, RawFusedLock};
 use safe_once_async::sync::{AsyncOnceLock, AsyncRawFusedLock};
 use std::any::type_name_of_val;
 use std::borrow::{Borrow, Cow};
-use std::collections::hash_map::{RandomState, RawEntryMut};
+use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash};
 use std::marker::Tuple;

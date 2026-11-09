@@ -1,4 +1,3 @@
-use crate::util::cow_entry::CowEntry;
 use crate::util::index_arena::IndexArena;
 use lock_api::{Mutex, RawMutex};
 use safe_once::api::raw::RawFused;
@@ -59,9 +58,15 @@ where
         K: Borrow<Q>,
     {
         let ref mut map = *self.map.lock();
-        let len = map.len();
-        self.arena
-            .get_or_init(*map.cow_entry_mut(key).or_insert_with(|| len))
+        let index = match map.get(&*key) {
+            Some(&index) => index,
+            None => {
+                let index = map.len();
+                map.insert(key.into_owned(), index);
+                index
+            }
+        };
+        self.arena.get_or_init(index)
     }
     pub fn len(&self) -> usize {
         self.map.lock().len()
